@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TalentLens — Analyze Candidates Through The Lens</title>
+  <meta name="description" content="TalentLens: a Bauhaus-inspired engine that analyzes candidates through the lens of real job postings." />
+
+  <!-- Typography: Outfit (geometric sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            canvas: '#F0F0F0',
+            ink: '#121212',
+            bred: '#D02020',
+            bblue: '#1040C0',
+            byellow: '#F0C020',
+            bmut: '#E0E0E0',
+            cream: '#FFF9C4',
+          },
+          fontFamily: { outfit: ['Outfit', 'sans-serif'] },
+          boxShadow: {
+            'hard-sm': '4px 4px 0px 0px #121212',
+            'hard-sm3': '3px 3px 0px 0px #121212',
+            'hard-md': '6px 6px 0px 0px #121212',
+            'hard-lg': '8px 8px 0px 0px #121212',
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Lucide icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    body { font-family: 'Outfit', sans-serif; }
+    .dot-grid-white {
+      background-image: radial-gradient(#ffffff 2px, transparent 2px);
+      background-size: 20px 20px;
+    }
+    .dot-grid-ink {
+      background-image: radial-gradient(#121212 2px, transparent 2px);
+      background-size: 20px 20px;
+    }
+    .clip-tri { clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+    .acc-body { max-height: 0; overflow: hidden; transition: max-height .3s ease-out; }
+    .acc-open .acc-body { max-height: 480px; }
+    .bar-fill { transition: width .5s ease-out; }
+    ::selection { background: #F0C020; color: #121212; }
+  </style>
+</head>
+
+<body class="bg-canvas text-ink font-outfit font-medium antialiased">
+
+  <!-- ============ NAV ============ -->
+  <header class="sticky top-0 z-50 bg-white border-b-4 border-ink">
+    <nav class="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16 sm:h-20">
+      <!-- Geometric logo: lens · square · triangle -->
+      <a href="#" class="flex items-center gap-2 sm:gap-3 group" aria-label="TalentLens home">
+        <span class="flex items-center gap-1.5">
+          <span class="relative h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-bred border-2 border-ink group-hover:scale-110 transition-transform duration-200">
+            <span class="absolute inset-[4px] rounded-full bg-white border border-ink" aria-hidden="true"></span>
+            <span class="absolute inset-[7px] rounded-full bg-ink" aria-hidden="true"></span>
+          </span>
+          <span class="h-5 w-5 sm:h-6 sm:w-6 bg-bblue border-2 border-ink group-hover:scale-110 transition-transform duration-200"></span>
+          <span class="h-5 w-5 sm:h-6 sm:w-6 clip-tri bg-byellow group-hover:scale-110 transition-transform duration-200"></span>
+        </span>
+        <span class="font-black uppercase tracking-tighter text-xl sm:text-2xl">Talent<span class="text-bred">Lens</span></span>
+      </a>
+
+      <ul class="hidden md:flex items-center gap-8 font-bold uppercase tracking-widest text-xs">
+        <li><a href="#matcher" class="hover:text-bred transition-colors duration-200">Matcher</a></li>
+        <li><a href="#stats" class="hover:text-bblue transition-colors duration-200">Data</a></li>
+        <li><a href="#how" class="hover:text-bred transition-colors duration-200">Process</a></li>
+        <li><a href="#faq" class="hover:text-bblue transition-colors duration-200">FAQ</a></li>
+      </ul>
+
+      <div class="flex items-center gap-3">
+        <a href="#matcher" class="hidden md:inline-block bg-bred text-white border-2 border-ink shadow-hard-sm px-5 py-2.5 font-bold uppercase tracking-wider text-xs hover:bg-bred/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all duration-200">
+          Get Matched
+        </a>
+        <button id="menuBtn" aria-label="Toggle menu" class="md:hidden p-2 border-2 border-ink bg-white shadow-hard-sm3 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all duration-200">
+          <i data-lucide="menu" class="h-6 w-6"></i>
+        </button>
+      </div>
+    </nav>
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="hidden md:hidden border-t-4 border-ink bg-byellow">
+      <ul class="px-4 py-4 space-y-3 font-bold uppercase tracking-widest text-sm">
+        <li><a href="#matcher" class="block hover:text-bred transition-colors">— Matcher</a></li>
+        <li><a href="#stats" class="block hover:text-bblue transition-colors">— Data</a></li>
+        <li><a href="#how" class="block hover:text-bred transition-colors">— Process</a></li>
+        <li><a href="#faq" class="block hover:text-bblue transition-colors">— FAQ</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <section class="border-b-4 border-ink">
+    <div class="grid lg:grid-cols-2">
+      <!-- Left: headline -->
+      <div class="py-12 px-4 sm:py-16 sm:px-6 lg:py-24 lg:px-8 flex flex-col justify-center relative overflow-hidden">
+        <span class="absolute top-8 right-8 h-4 w-4 rounded-full bg-bred hidden sm:block" aria-hidden="true"></span>
+        <p class="inline-flex items-center gap-2 self-start bg-byellow border-2 border-ink shadow-hard-sm3 px-3 py-1.5 font-bold uppercase tracking-widest text-[10px] sm:text-xs mb-6">
+          <i data-lucide="zap" class="h-4 w-4"></i> TF-IDF × Skill Overlap Engine
+        </p>
+        <h1 class="font-black uppercase tracking-tighter leading-[0.9] text-4xl sm:text-6xl lg:text-8xl">
+          Your<br />
+          <span class="text-bred">Resume,</span><br />
+          In Focus.
+        </h1>
+        <p class="mt-6 max-w-md text-base sm:text-lg leading-relaxed">
+          <span class="font-bold">TalentLens</span> refracts your resume through the lens of
+          <span class="font-bold" id="heroJobCount">…</span> real job postings — pure geometry, pure math, no guesswork.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-4">
+          <a href="#matcher" class="bg-bred text-white border-2 border-ink shadow-hard-md px-7 py-3.5 font-bold uppercase tracking-wider hover:bg-bred/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all duration-200">
+            Start Matching <i data-lucide="arrow-right" class="inline h-5 w-5 -mt-1 ml-1"></i>
+          </a>
+          <a href="#how" class="bg-white text-ink border-2 border-ink shadow-hard-md px-7 py-3.5 font-bold uppercase tracking-wider hover:bg-bmut active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all duration-200">
+            How It Works
+          </a>
+        </div>
+        <!-- Small decorative strip -->
+        <div class="mt-10 flex items-center gap-2" aria-hidden="true">
+          <span class="h-3 w-3 rounded-full bg-bblue"></span>
+          <span class="h-3 w-3 bg-byellow rotate-45"></span>
+          <span class="h-3 w-3 bg-bred"></span>
+          <span class="h-3 w-3 rounded-full bg-ink"></span>
+          <span class="ml-3 h-[2px] w-24 bg-ink"></span>
+        </div>
+      </div>
+
+      <!-- Right: blue panel with geometric composition -->
+      <div class="relative bg-bblue border-t-4 lg:border-t-0 lg:border-l-4 border-ink min-h-[320px] sm:min-h-[420px] overflow-hidden dot-grid-white">
+        <!-- Overlapping composition -->
+        <div class="absolute inset-0" aria-hidden="true">
+          <span class="absolute left-[8%] top-[12%] h-32 w-32 sm:h-48 sm:w-48 rounded-full bg-byellow border-4 border-ink"></span>
+          <span class="absolute right-[10%] top-[28%] h-24 w-24 sm:h-36 sm:w-36 bg-bred border-4 border-ink rotate-45"></span>
+          <span class="absolute left-[30%] bottom-[8%] h-28 w-28 sm:h-44 sm:w-44 bg-white border-4 border-ink shadow-hard-md flex items-center justify-center">
+            <span class="h-0 w-0 border-l-[34px] border-r-[34px] border-b-[56px] border-l-transparent border-r-transparent border-b-byellow sm:border-l-[52px] sm:border-r-[52px] sm:border-b-[88px]"></span>
+          </span>
+          <span class="absolute right-[6%] bottom-[16%] h-12 w-12 sm:h-16 sm:w-16 rounded-full bg-ink border-4 border-white"></span>
+          <span class="absolute left-[6%] bottom-[38%] h-8 w-8 bg-white rounded-full"></span>
+        </div>
+        <!-- Floating caption card -->
+        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border-4 border-ink shadow-hard-lg px-5 py-4 sm:px-7 sm:py-5 text-center rotate-[-2deg]">
+          <p class="font-black uppercase tracking-tighter text-xl sm:text-3xl leading-[0.9]">Through<br />The<br /><span class="text-bblue">Lens</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MATCHER ============ -->
+  <section id="matcher" class="bg-white border-b-4 border-ink">
+    <div class="max-w-7xl mx-auto py-12 px-4 sm:py-16 sm:px-6 lg:py-24 lg:px-8">
+      <div class="flex items-end justify-between flex-wrap gap-4 mb-10">
+        <div>
+          <p class="font-bold uppercase tracking-widest text-xs text-bblue mb-2">01 — Input</p>
+          <h2 class="font-black uppercase tracking-tighter leading-[0.9] text-3xl sm:text-5xl lg:text-6xl">
+            Feed The<br />Machine
+          </h2>
+        </div>
+        <span class="h-10 w-10 bg-bred rotate-45 border-4 border-ink hidden sm:block" aria-hidden="true"></span>
+      </div>
+
+      <!-- Input card -->
+      <div class="relative bg-canvas border-4 border-ink shadow-hard-lg p-5 sm:p-8">
+        <span class="absolute -top-2 -right-2 h-4 w-4 rounded-full bg-bblue border-2 border-ink" aria-hidden="true"></span>
+        <span class="absolute -bottom-2 -left-2 h-4 w-4 bg-byellow border-2 border-ink" aria-hidden="true"></span>
+
+        <div class="grid lg:grid-cols-5 gap-8">
+          <!-- Paste -->
+          <div class="lg:col-span-3">
+            <label for="resumeText" class="block font-bold uppercase tracking-widest text-xs mb-3">
+              Paste Resume Text
+            </label>
+            <textarea id="resumeText" rows="12"
+              placeholder="Paste your full resume here — education, experience, skills, projects…"
+              class="w-full bg-white border-2 border-ink shadow-hard-sm3 p-4 text-sm sm:text-base leading-relaxed placeholder:text-ink/40 focus:outline-none focus:ring-2 focus:ring-bblue focus:ring-offset-2 resize-y"></textarea>
+          </div>
+
+          <!-- Upload -->
+          <div class="lg:col-span-2 flex flex-col">
+            <label class="block font-bold uppercase tracking-widest text-xs mb-3">…Or Upload A File</label>
+            <label id="dropZone" for="resumeFile"
+              class="flex-1 flex flex-col items-center justify-center gap-3 cursor-pointer bg-bblue text-white border-4 border-dashed border-ink p-6 text-center hover:bg-bblue/90 transition-colors duration-200">
+              <i data-lucide="upload" class="h-8 w-8"></i>
+              <span class="font-bold uppercase tracking-wider text-sm">Drop .txt or .docx</span>
+              <span id="fileName" class="text-xs opacity-80">No file selected</span>
+            </label>
+            <input type="file" id="resumeFile" accept=".txt,.md,.docx" class="hidden" />
+
+            <div class="mt-6">
+              <label for="topN" class="block font-bold uppercase tracking-widest text-xs mb-2">Results To Show</label>
+              <select id="topN"
+                class="w-full bg-white border-2 border-ink shadow-hard-sm3 px-3 py-2.5 font-bold uppercase text-xs tracking-wider focus:outline-none focus:ring-2 focus:ring-bred focus:ring-offset-2">
+                <option value="5">Top 5</option>
+                <option value="8" selected>Top 8</option>
+                <option value="12">Top 12</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 flex flex-wrap items-center gap-4">
+          <button id="analyzeBtn"
+            class="bg-bred text-white border-2 border-ink shadow-hard-md px-8 py-3.5 font-bold uppercase tracking-wider hover:bg-bred/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all duration-200 disabled:opacity-60 disabled:cursor-wait">
+            <i data-lucide="scan-text" class="inline h-5 w-5 -mt-1 mr-1"></i>
+            <span id="analyzeLabel">Analyze Resume</span>
+          </button>
+          <button id="clearBtn"
+            class="bg-white text-ink border-2 border-ink shadow-hard-sm px-6 py-3.5 font-bold uppercase tracking-wider text-sm hover:bg-bmut active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all duration-200">
+            Clear
+          </button>
+          <p id="matchError" class="hidden text-bred font-bold uppercase tracking-wider text-xs"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section id="results" class="hidden border-b-4 border-ink bg-canvas">
+    <div class="max-w-7xl mx-auto py-12 px-4 sm:py-16 sm:px-6 lg:py-24 lg:px-8">
+      <div class="flex items-end justify-between flex-wrap gap-4 mb-10">
+        <div>
+          <p class="font-bold uppercase tracking-widest text-xs text-bred mb-2">02 — Output</p>
+          <h2 class="font-black uppercase tracking-tighter leading-[0.9] text-3xl sm:text-5xl lg:text-6xl">
+            Top <span id="resultCount" class="text-bblue">Matches</span>
+          </h2>
+        </div>
+        <p class="font-bold uppercase tracking-widest text-xs bg-byellow border-2 border-ink shadow-hard-sm3 px-3 py-1.5">
+          Best Match: <span id="bestMatch" class="text-bred">—</span>
+        </p>
+      </div>
+      <div id="resultGrid" class="grid gap-8 md:grid-cols-2 xl:grid-cols-3"></div>
+    </div>
+  </section>
+
+  <!-- ============ STATS (Yellow block) ============ -->
+  <section id="stats" class="bg-byellow border-b-4 border-ink relative overflow-hidden">
+    <span class="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/50" aria-hidden="true"></span>
+    <span class="absolute -left-12 bottom-[-3rem] h-40 w-40 bg-bred/20 rotate-45" aria-hidden="true"></span>
+    <div class="max-w-7xl mx-auto py-12 px-4 sm:py-16 sm:px-6 lg:py-24 lg:px-8 relative">
+      <p class="font-bold uppercase tracking-widest text-xs text-bblue mb-2">03 — The Data</p>
+      <h2 class="font-black uppercase tracking-tighter leading-[0.9] text-3xl sm:text-5xl mb-10">Numbers,<br />Not Vibes</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-4 border-ink bg-byellow divide-y-4 sm:divide-y-0 sm:divide-x-4 divide-ink shadow-hard-lg">
+        <div class="p-6 sm:p-8 text-center">
+          <p class="font-black tracking-tighter text-4xl sm:text-5xl" id="statJobs">—</p>
+          <p class="mt-2 font-bold uppercase tracking-widest text-xs">Jobs Indexed</p>
+        </div>
+        <div class="p-6 sm:p-8 text-center">
+          <p class="font-black tracking-tighter text-4xl sm:text-5xl" id="statTitles">—</p>
+          <p class="mt-2 font-bold uppercase tracking-widest text-xs">Unique Roles</p>
+        </div>
+        <div class="p-6 sm:p-8 text-center">
+          <p class="font-black tracking-tighter text-4xl sm:text-5xl" id="statSkills">—</p>
+          <p class="mt-2 font-bold uppercase tracking-widest text-xs">Unique Skills</p>
+        </div>
+        <div class="p-6 sm:p-8 text-center">
+          <p class="font-black tracking-tighter text-4xl sm:text-5xl" id="statAvg">—</p>
+          <p class="mt-2 font-bold uppercase tracking-widest text-xs">Avg Top-8 Match %</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HOW IT WORKS ============ -->
+  <section id="how" class="bg-bred border-b-4 border-ink relative overflow-hidden">
+    <span class="absolute right-[5%] top-[10%] h-24 w-24 rounded-full bg-white/20" aria-hidden="true"></span>
+    <span class="absolute left-[3%] bottom-[8%] h-32 w-32 bg-byellow/20 rotate-45" aria-hidden="true"></span>
+    <div class="max-w-7xl mx-auto py-12 px-4 sm:py-16 sm:px-6 lg:py-24 lg:px-8 relative">
+      <p class="font-bold uppercase tracking-widest text-xs text-byellow mb-2">04 — Process</p>
+      <h2 class="font-black uppercase tracking-tighter leading-[0.9] text-3xl sm:text-5xl lg:text-6xl text-white mb-12">
+        Four Steps.<br />Zero Magic.
+      </h2>
+
+      <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <!-- Step template x4, numbers in rotated squares -->
+        <div class="group">
+          <div class="h-16 w-16 bg-byellow border-4 border-ink shadow-hard-md rotate-45 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-200">
+            <span class="-rotate-45 font-black tracking-tighter text-2xl">1</span>
+          </div>
+          <h3 class="font-bold uppercase tracking-wider text-white text-lg">Input</h3>
+          <p class="mt-2 text-white/90 text-sm leading-relaxed">Paste raw resume text or upload a .txt / .docx file — we extract every word.</p>
+        </div>
+        <div class="group">
+          <div class="h-16 w-16 bg-bblue border-4 border-ink shadow-hard-md rotate-45 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-200">
+            <span class="-rotate-45 font-black tracking-tighter text-2xl text-white">2</span>
+          </div>
+          <h3 class="font-bold uppercase tracking-wider text-white text-lg">Vectorize</h3>
+          <p class="mt-2 text-white/90 text-sm leading-relaxed">Your text becomes a TF-IDF vector, compared against every job posting's vector.</p>
+        </div>
+        <div class="group">
+          <div class="h-16 w-16 bg-white border-4 border-ink shadow-hard-md rotate-45 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-200">
+            <span class="-rotate-45 font-black tracking-tighter text-2xl">3</span>
+          </div>
+          <h3 class="font-bold uppercase tracking-wider text-white text-lg">Score</h3>
+          <p class="mt-2 text-white/90 text-sm leading-relaxed">50% semantic similarity + 50% skill overlap = one honest match percentage.</p>
+        </div>
+        <div class="group">
+          <div class="h-16 w-16 bg-byellow border-4 border-ink shadow-hard-md rotate-45 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-200">
+            <span class="-rotate-45 font-black tracking-tighter text-2xl">4</span>
+          </div>
+          <h3 class="font-bold uppercase tracking-wider text-white text-lg">Act</h3>
+          <p class="mt-2 text-white/90 text-sm leading-relaxed">See matched skills to highlight, and missing skills worth learning next.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FAQ (Accordion) ============ -->
+  <section id="faq" class="border-b-4 border-ink bg-white">
+    <div class="max-w-4xl mx-auto py-12 px-4 sm:py-16 sm:px-6 lg:py-24 lg:px-8">
+      <p class="font-bold uppercase tracking-widest text-xs text-bblue mb-2">05 — Questions</p>
+      <h2 class="font-black uppercase tracking-tighter leading-[0.9] text-3xl sm:text-5xl mb-10">Straight<br />Answers</h2>
+
+      <div class="space-y-6" id="accordion">
+        <div class="acc border-4 border-ink shadow-hard-md bg-white">
+          <button class="acc-head w-full flex items-center justify-between gap-4 px-5 sm:px-7 py-4 sm:py-5 text-left font-bold uppercase tracking-wider text-sm sm:text-base">
+            <span>How is the match score calculated?</span>
+            <i data-lucide="chevron-down" class="h-6 w-6 shrink-0 transition-transform duration-300"></i>
+          </button>
+          <div class="acc-body">
+            <div class="px-5 sm:px-7 py-5 bg-cream border-t-4 border-ink text-sm sm:text-base leading-relaxed">
+              The final score is 50% TF-IDF cosine similarity (how semantically close your resume is to the job's
+              full text) and 50% skill overlap (what fraction of the job's required skills appear in your resume).
+              No black boxes, no AI hand-waving — just document geometry.
+            </div>
+          </div>
+        </div>
+
+        <div class="acc border-4 border-ink shadow-hard-md bg-white">
+          <button class="acc-head w-full flex items-center justify-between gap-4 px-5 sm:px-7 py-4 sm:py-5 text-left font-bold uppercase tracking-wider text-sm sm:text-base">
+            <span>Which file types can I upload?</span>
+            <i data-lucide="chevron-down" class="h-6 w-6 shrink-0 transition-transform duration-300"></i>
+          </button>
+          <div class="acc-body">
+            <div class="px-5 sm:px-7 py-5 bg-cream border-t-4 border-ink text-sm sm:text-base leading-relaxed">
+              Plain text (.txt, .md) and Word documents (.docx). The .docx parser runs on the server with zero
+              external dependencies — it reads the raw document XML directly.
+            </div>
+          </div>
+        </div>
+
+        <div class="acc border-4 border-ink shadow-hard-md bg-white">
+          <button class="acc-head w-full flex items-center justify-between gap-4 px-5 sm:px-7 py-4 sm:py-5 text-left font-bold uppercase tracking-wider text-sm sm:text-base">
+            <span>What should I do with "missing skills"?</span>
+            <i data-lucide="chevron-down" class="h-6 w-6 shrink-0 transition-transform duration-300"></i>
+          </button>
+          <div class="acc-body">
+            <div class="px-5 sm:px-7 py-5 bg-cream border-t-4 border-ink text-sm sm:text-base leading-relaxed">
+              Treat the missing-skills list as a prioritised learning plan: it is literally the set of tools the
+              role expects that your resume doesn't mention. Close the biggest gaps first — they raise your
+              skill-overlap score directly.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="bg-ink text-white">
+    <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+        <div class="flex items-center gap-3">
+          <span class="flex items-center gap-1.5">
+            <span class="relative h-5 w-5 rounded-full bg-bred border-2 border-white">
+              <span class="absolute inset-[4px] rounded-full bg-ink" aria-hidden="true"></span>
+            </span>
+            <span class="h-5 w-5 bg-bblue border-2 border-white"></span>
+            <span class="h-5 w-5 clip-tri bg-byellow"></span>
+          </span>
+          <span class="font-black uppercase tracking-tighter text-2xl">Talent<span class="text-bred">Lens</span></span>
+        </div>
+        <p class="font-bold uppercase tracking-widest text-[10px] sm:text-xs text-white/70">
+          Analyze Candidates Through The Lens · TF-IDF × Skill Overlap · <span id="year"></span>
+        </p>
+      </div>
+      <div class="mt-8 pt-8 border-t-4 border-white/20 flex items-center gap-2" aria-hidden="true">
+        <span class="h-3 w-3 rounded-full bg-bred"></span>
+        <span class="h-3 w-3 bg-bblue rotate-45"></span>
+        <span class="h-3 w-3 rounded-full bg-byellow"></span>
+        <span class="ml-3 h-[2px] flex-1 bg-white/20"></span>
+        <span class="h-3 w-3 bg-white"></span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // =================== Helpers ===================
+    const $ = (sel) => document.querySelector(sel);
+    const esc = (s) =>
+      String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    // =================== Static interactions ===================
+    $('#menuBtn').addEventListener('click', () => $('#mobileMenu').classList.toggle('hidden'));
+    $('#mobileMenu').addEventListener('click', () => $('#mobileMenu').classList.add('hidden'));
+    $('#year').textContent = new Date().getFullYear();
+
+    // Accordion: open one at a time, red header when open, chevron flip
+    document.querySelectorAll('.acc').forEach((acc) => {
+      acc.querySelector('.acc-head').addEventListener('click', () => {
+        const isOpen = acc.classList.contains('acc-open');
+        document.querySelectorAll('.acc').forEach((a) => {
+          a.classList.remove('acc-open');
+          const head = a.querySelector('.acc-head');
+          head.classList.remove('bg-bred', 'text-white');
+          head.querySelector('i,svg').style.transform = '';
+        });
+        if (!isOpen) {
+          acc.classList.add('acc-open');
+          const head = acc.querySelector('.acc-head');
+          head.classList.add('bg-bred', 'text-white');
+          head.querySelector('i,svg').style.transform = 'rotate(180deg)';
+        }
+      });
+    });
+
+    // File input label
+    $('#resumeFile').addEventListener('change', (e) => {
+      const f = e.target.files[0];
+      $('#fileName').textContent = f ? f.name : 'No file selected';
+    });
+
+    $('#clearBtn').addEventListener('click', () => {
+      $('#resumeText').value = '';
+      $('#resumeFile').value = '';
+      $('#fileName').textContent = 'No file selected';
+      $('#matchError').classList.add('hidden');
+      $('#results').classList.add('hidden');
+    });
+
+    // =================== Load stats from API ===================
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/stats');
+        if (!res.ok) throw new Error('stats unavailable');
+        const s = await res.json();
+        $('#heroJobCount').textContent = s.total_jobs.toLocaleString();
+        $('#statJobs').textContent = s.total_jobs.toLocaleString();
+        $('#statTitles').textContent = s.unique_titles.toLocaleString();
+        $('#statSkills').textContent = s.unique_skills.toLocaleString();
+      } catch {
+        $('#heroJobCount').textContent = '1,000+';
+      }
+    }
+    loadStats();
+
+    // =================== Match result rendering ===================
+    // Every 3rd decorative shape is rotated 45°, colors rotate red→blue→yellow
+    const SHAPES = ['rounded-full bg-bred', 'bg-bblue', 'bg-byellow rotate-45'];
+
+    function chip(skill, tone) {
+      const cls = tone === 'have'
+        ? 'bg-byellow border-ink'
+        : 'bg-bmut border-ink/60 text-ink/60';
+      return `<span class="inline-block ${cls} border-2 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide">${esc(skill)}</span>`;
+    }
+
+    function renderResults(data) {
+      $('#resultCount').textContent = `${data.results.length} Matches`;
+      $('#bestMatch').textContent = `${data.best_match}%`;
+      $('#statAvg').textContent = `${data.avg_top_match}%`;
+
+      $('#resultGrid').innerHTML = data.results
+        .map((r, i) => {
+          const shape = SHAPES[i % 3];
+          const pct = Math.min(100, Math.max(0, r.match_pct)).toFixed(0);
+          const top3 = r.matched_skills.slice(0, 10);
+          const miss3 = r.missing_skills.slice(0, 8);
+          return `
+          <article class="relative bg-white border-4 border-ink shadow-hard-lg p-6 hover:-translate-y-1 transition-transform duration-200">
+            <span class="absolute top-4 right-4 h-4 w-4 ${shape} border-2 border-ink" aria-hidden="true"></span>
+            <div class="flex items-start gap-4">
+              <div class="h-16 w-16 shrink-0 ${i % 3 === 1 ? 'bg-bblue' : i % 3 === 2 ? 'bg-bred rotate-45' : 'bg-byellow rounded-full'} border-4 border-ink shadow-hard-sm3 flex items-center justify-center">
+                <span class="font-black tracking-tighter text-lg ${i % 3 === 2 ? '-rotate-45' : ''} ${i % 3 === 0 ? 'text-ink' : 'text-white'}">${pct}<span class="text-[10px] align-top">%</span></span>
+              </div>
+              <div class="min-w-0 pr-6">
+                <p class="font-bold uppercase tracking-widest text-[10px] text-bblue">${esc(r.job_id)} · ${esc(r.level)} · ${esc(r.years)} yrs</p>
+                <h3 class="font-black uppercase tracking-tighter leading-tight text-xl mt-1 break-words">${esc(r.title)}</h3>
+              </div>
+            </div>
+
+            <!-- Score bars -->
+            <div class="mt-5 space-y-2">
+              ${bar('Semantic', r.tfidf_pct, 'bg-bblue')}
+              ${bar('Skills', r.skill_pct, 'bg-bred')}
+            </div>
+
+            <div class="mt-5">
+              <p class="font-bold uppercase tracking-widest text-[10px] mb-2 flex items-center gap-1">
+                <i data-lucide="check" class="h-4 w-4 text-bred"></i> Matched Skills (${r.matched_skills.length})
+              </p>
+              <div class="flex flex-wrap gap-1.5">${top3.map((s) => chip(s, 'have')).join('') || '<span class="text-xs text-ink/50">None detected</span>'}</div>
+            </div>
+
+            ${miss3.length ? `
+            <div class="mt-4">
+              <p class="font-bold uppercase tracking-widest text-[10px] mb-2 flex items-center gap-1">
+                <i data-lucide="circle-dashed" class="h-4 w-4 text-bblue"></i> Gaps To Close (${r.missing_skills.length})
+              </p>
+              <div class="flex flex-wrap gap-1.5">${miss3.map((s) => chip(s, 'miss')).join('')}</div>
+            </div>` : ''}
+          </article>`;
+        })
+        .join('');
+
+      $('#results').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function bar(label, value, color) {
+      const w = Math.min(100, Math.max(2, value)).toFixed(0);
+      return `
+        <div class="flex items-center gap-3">
+          <span class="w-20 shrink-0 font-bold uppercase tracking-widest text-[10px]">${label}</span>
+          <div class="flex-1 h-4 border-2 border-ink bg-white">
+            <div class="bar-fill h-full ${color}" style="width:0%" data-w="${w}%"></div>
+          </div>
+          <span class="w-12 text-right font-black tracking-tighter text-sm">${value}%</span>
+        </div>`;
+    }
+
+    // Animate bars in after paint
+    const animateBars = () =>
+      requestAnimationFrame(() =>
+        document.querySelectorAll('.bar-fill').forEach((el) => (el.style.width = el.dataset.w))
+      );
+
+    // =================== Analyze flow ===================
+    $('#analyzeBtn').addEventListener('click', async () => {
+      const err = $('#matchError');
+      err.classList.add('hidden');
+      const btn = $('#analyzeBtn');
+      const label = $('#analyzeLabel');
+      const file = $('#resumeFile').files[0];
+      const text = $('#resumeText').value.trim();
+
+      if (!file && text.length < 40) {
+        err.textContent = 'Paste at least a few lines of resume text, or choose a file.';
+        err.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      label.textContent = 'Analyzing…';
+      try {
+        let res;
+        if (file) {
+          const fd = new FormData();
+          fd.append('file', file);
+          fd.append('top_n', $('#topN').value);
+          res = await fetch('/api/match/file', { method: 'POST', body: fd });
+        } else {
+          res = await fetch('/api/match', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, top_n: Number($('#topN').value) }),
+          });
+        }
+        if (!res.ok) {
+          const detail = (await res.json().catch(() => ({}))).detail || `Request failed (${res.status})`;
+          throw new Error(detail);
+        }
+        renderResults(await res.json());
+        animateBars();
+        $('#results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (e) {
+        err.textContent = e.message;
+        err.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        label.textContent = 'Analyze Resume';
+      }
+    });
+
+  </script>
+
+
+
+
+
+</body>
+</html>
